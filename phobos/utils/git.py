@@ -167,7 +167,7 @@ def initGit(destination, filename=None, initialsave=False, url=None, readmetxt='
     return True
 
 
-def commit(destination, message='Automated commit', ignore=[]):
+def commit(destination, message='Automated commit', ignore=[], force_push = True):
     """Commits the current status in the git folder at destination.
     This can ignore the first level subfolders and files specified in the
     optional parameter.
@@ -200,13 +200,34 @@ def commit(destination, message='Automated commit', ignore=[]):
             cwd=destination,
             universal_newlines=True,
         )
-        subprocess.check_output(['git', 'push', 'origin'], cwd=destination, universal_newlines=True)
+        push(destination, force_push = force_push)
         log('Commit to ' + destination + ' successful.', 'DEBUG')
         return True
     except subprocess.CalledProcessError as error:
         log('Could not commit and push: ' + str(error), 'ERROR')
         return False
 
+def push(destination, force_push = False):
+    """Pushes the current status in the git folder at destination.
+    Args:
+      destination: target repository
+      force_push: selecte True to force, push, False otherwise
+
+    Returns:
+      : True on success, False on failure
+
+    """
+    try:
+        if force_push:
+            subprocess.check_output(['git', 'push','--force','origin'], cwd=destination, universal_newlines=True)
+            log('Forced push to ' + destination + ' successful.', 'DEBUG')
+        else:
+            subprocess.check_output(['git', 'push', 'origin'], cwd=destination, universal_newlines=True)
+            log('Push to ' + destination + ' successful.', 'DEBUG')
+        return True
+    except subprocess.CalledProcessError as error:
+        log('Could not push: ' + str(error), 'ERROR')
+        return False
 
 def makeGitFolders(destination):
     """Create the Phobos folder structure for a git at the destination.
